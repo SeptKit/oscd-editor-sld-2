@@ -6,10 +6,28 @@ on:
       - main
 
 jobs:
-  ci-cd:
+  deploy:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
-    uses: OMICRONEnergyOSS/oscd-gh-workflows/.github/workflows/continuous-deployment.yml@main
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bundle
+        run: npm run bundle
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist
